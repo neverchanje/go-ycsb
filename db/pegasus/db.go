@@ -46,6 +46,7 @@ package pegasus
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	_ "net/http/pprof"
 	"strings"
 	"time"
@@ -55,6 +56,7 @@ import (
 	"github.com/XiaoMi/pegasus-go-client/pegasus2"
 	"github.com/magiconair/properties"
 	"github.com/pingcap/go-ycsb/pkg/ycsb"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -173,4 +175,9 @@ func (pegasusCreator) Create(p *properties.Properties) (ycsb.DB, error) {
 
 func init() {
 	ycsb.RegisterDBCreator("pegasus", pegasusCreator{})
+	go func() {
+		// http://localhost:2112/metrics
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":2112", nil)
+	}()
 }
